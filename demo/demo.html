@@ -17,71 +17,7 @@
     <body>
         
         <pre id="preview"><a href="#" id="downloader" download="sample.xlsx">Export to Excel</a></pre>
-    <div>
-        Rows:
-        <select id="selectRows">
-            <option>3</option>
-            <option>30</option>
-            <option>3000</option>
-            <option>30000</option>
-        </select>
-    </div>
-    <div>
-        Columns:
-        <select id="selectColumns">
-            <option>1</option>
-            <option>5</option>
-            <option>10</option>
-            <option>20</option>
-        </select>
-    </div>
-	<div>FileName: <input type="text" id="filename" value="file.xls"/>
-    <table id="tableData">
-    </table>
-
-	
-    <script>
-
-        $(document).ready(function () {
-            $('#selectRows').on('change', drawRows);
-            $('#selectColumns').on('change', drawRows);
-            drawRows();
-
-            function drawRows() {
-                var $table = $('#tableData');
-                var rowCount = $('#selectRows').val();
-                var colCount = $('#selectColumns').val();
-
-                $table.empty();
-
-                var buffer = [];
-                var bufferIndex = -1;
-
-                buffer[++bufferIndex] = "<tr>";
-                for (var i = 0; i < colCount; i++) {
-                    buffer[++bufferIndex] = "<th>";
-                    buffer[++bufferIndex] = i;
-                    buffer[++bufferIndex] = "</th>";
-                }
-                buffer[++bufferIndex] = "</tr>";
-
-                for (var i = 0; i <= rowCount; i++) {
-                    buffer[++bufferIndex] = "<tr>";
-                    for (var j = 0; j < colCount; j++) {
-                        buffer[++bufferIndex] = '<td>';
-                        buffer[++bufferIndex] = i;
-                        buffer[++bufferIndex] = ',';
-                        buffer[++bufferIndex] = j;
-                        buffer[++bufferIndex] = '</td>';
-                    }
-                    buffer[++bufferIndex] = "</td></tr>";
-                }
-                $table.append(buffer.join(''));
-            }
-
-        });
-    </script>
-	
+    
         <script type="text/javascript">
             require.config({
                 text: 'text.js',
@@ -100,61 +36,103 @@
             });
             require(['../excel-builder'], function (builder) {
                 var artistWorkbook = builder.createWorkbook();
-    var albumList = artistWorkbook.createWorksheet({name: 'Album List'});
+                var albumList = artistWorkbook.createWorksheet({name: 'Album List'});
 
-    var currency = artistWorkbook.getStyleSheet().createFormat({
-        format: '$#,##0.00'
-    });
+                var stylesheet = artistWorkbook.getStyleSheet();
 
-    var originalData = [
-        ['Artist', 'Album', 'Price'],
-        ['Buckethead', 'Albino Slug', {value: 8.99, metadata: {style: currency.id}}],
-        ['Buckethead', 'Electric Tears', {value: 13.99, metadata: {style: currency.id}}],
-        ['Buckethead', 'Colma', {value: 11.34, metadata: {style: currency.id}}],
-        ['Crystal Method', 'Vegas', {value: 10.54, metadata: {style: currency.id}}],
-        ['Crystal Method', 'Tweekend', {value: 10.64, metadata: {style: currency.id}}],
-        ['Crystal Method', 'Divided By Night', {value: 8.99, metadata: {style: currency.id}}]
-    ];
-	
-	console.table(originalData);
+                var currency = stylesheet.createFormat({
+                    format: '$#,##0.00'
+                });
 
-    albumList.setData(originalData);
-	
-	albumList.setHeader([
-        'This will be on the left',
-        ["In the middle", {text: "I shall be", bold: true}],
-        {text: "Right, underlined and size of 16", font: 16, underline: true}
-    ]);
 
-    albumList.setFooter([
-        "Date of print: &D &T",
-        "&A",
-        "Page &P of &N"
-    ]);
-	
-    artistWorkbook.addWorksheet(albumList);
+                var currencyMeta = {style: currency.id};
 
-    var data = builder.createFile(artistWorkbook);
-				
+                var red = 'FFFF0000';
+                var importantFormatter = stylesheet.createFormat({
+                    font: {
+                        bold: true,
+                        color: red
+                    },
+                    border: {
+                        bottom: {color: red, style: 'thin'},
+                        top: {color: red, style: 'thin'},
+                        left: {color: red, style: 'thin'},
+                        right: {color: red, style: 'thin'}
+                    }
+                });
+                 
+                var dateFormtter = stylesheet.createFormat({
+                    format: 'm/d/yy'
+                });
+
+                var dateMeta = {style: dateFormtter.id};
+
+                var originalData = [
+                    [
+                        {
+                            value: 'Artist',
+                            metadata: {style: importantFormatter.id}
+                        },
+                        'Album', 'Price', 'Date'
+                    ],
+                    [
+                        'Buckethead', 
+                        'Albino Slug', 
+                        {value: 8.99, metadata: currencyMeta}, 
+                        {value: '5/1/2013', metadata: dateMeta}
+                    ],
+                    [
+                        'Buckethead', 
+                        'Electric Tears', 
+                        {value: 13.99, metadata: currencyMeta}, 
+                        {value: '6/1/2013', metadata: dateMeta}
+                    ],
+                    [
+                        'Buckethead', 
+                        'Colma', 
+                        {value: 11.34, metadata: currencyMeta}, 
+                        {value: '12/1/2015', metadata: dateMeta}
+                    ],
+                    ['Crystal Method', 'Vegas', {value: 10.54, metadata: currencyMeta}],
+                    ['Crystal Method', 'Tweekend', {value: 10.64, metadata: currencyMeta}],
+                    ['Crystal Method', 'Divided By Night', {value: 8.99, metadata: currencyMeta}]
+                ];
+            	
+            	console.table(originalData);
+
+                albumList.setData(originalData);
+            	
+            	albumList.setHeader([
+                    'This will be on the left',
+                    ["In the middle", {text: "I shall be", bold: true}],
+                    {text: "Right, underlined and size of 16", font: 16, underline: true}
+                ]);
+
+                albumList.setFooter([
+                    "Date of print: &D &T",
+                    "&A",
+                    "Page &P of &N"
+                ]);
+            	
+                artistWorkbook.addWorksheet(albumList);
+
+                var data = builder.createFile(artistWorkbook);
+            			
                     Downloadify.create('downloader',{
-                            filename: function(){
-                                    return "sample.xlsx";
-                            },
-                            data: function(){ 
-                                    //return builder.createFile(basicReport.prepare());
-									return data;
-                            },
-//                            onComplete: function(){ alert('Your File Has Been Saved!'); },
-//                            onCancel: function(){ alert('You have cancelled the saving of this file.'); },
-//                            onError: function(){ alert('You must put something in the File Contents or there will be nothing to save!'); },
-                            swf: 'downloadify/media/downloadify.swf',
-                            downloadImage: 'downloadify/images/download.png',
-                            width: 100,
-                            dataType: 'base64',
-                            height: 30,
-                            transparent: true,
-                            append: false
-                    });
+                        filename: function(){
+                                return "sample.xls";
+                        },
+                        data: function(){ 
+            					return data;
+                        },
+                        swf: 'downloadify/media/downloadify.swf',
+                        downloadImage: 'downloadify/images/download.png',
+                        width: 100,
+                        dataType: 'base64',
+                        height: 30,
+                        transparent: true,
+                        append: false
+                });
             });
             
         </script>
